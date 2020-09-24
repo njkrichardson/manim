@@ -5,19 +5,15 @@ TODO
 """
 from manimlib.imports import *
 from computer_architecture.atomic.utils import get_proton, get_electron
+from computer_architecture.production.quotations import IntroQuotation
 
-class OpeningQuotation(Scene): 
-    def construct(self): 
-        opening_quotation = TextMobject("``", "A ", "really", " great quotation.''", 
-                                        tex_to_color_map={'really': BLUE})
-        author = TextMobject("A Pithy Author")
-        author.next_to(opening_quotation, direction=DOWN)
-        
-        self.play(
-            FadeInFrom(author, direction=DOWN), 
-            Write(opening_quotation, run_time=4)
-        )
-        self.wait()
+class OpeningQuotation(IntroQuotation): 
+    CONFIG={
+        'author': TextMobject("Rijndael"), 
+        'quotation': TextMobject("``", "A ", "really", " great quotation.''", 
+        tex_to_color_map={'really': BLUE}), 
+        'run_time': 2.5
+    }
 
 class Plan(Scene): 
     def construct(self): 
