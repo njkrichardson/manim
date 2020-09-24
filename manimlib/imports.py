@@ -103,6 +103,7 @@ from manimlib.utils.strings import *
 import inspect
 import itertools as it
 import numpy as np
+import numpy.random as npr 
 import operator as op
 import os
 import random
