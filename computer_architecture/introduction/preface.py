@@ -38,7 +38,6 @@ class Plan(Scene):
         # bulleted topics list 
         our_topics = BulletedList(*topics, buff=MED_SMALL_BUFF)
         our_topics.next_to(h_line, direction=DOWN, aligned_edge=LEFT, buff=LARGE_BUFF)
-        # our_topics.to_edge(edge=LEFT, buff=LARGE_BUFF)
         self.add(our_topics)
 
         rect = ScreenRectangle()
