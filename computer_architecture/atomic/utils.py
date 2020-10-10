@@ -38,7 +38,7 @@ class JigglingSubmobjects(VGroup):
             self.add(submob)
         self.add_updater(lambda m, dt: m.update(dt))
 
-    def update(self, dt : float):
+    def update(self, dt : float, recursive : bool = True):
         for submob in self.submobjects:
             submob.jiggling_phase += dt * self.jiggles_per_second * TAU
             submob.shift(
