@@ -133,11 +133,28 @@ def get_bohr_atom(atomic_number : int = 14, dynamic : bool = False, show_orbits 
         electrons = JigglingSubmobjects(VGroup(*electrons))
 
     atom.append(nucleus)
-    atom.append(electrons)
 
     if return_list is True:  
+        atom.append(electrons)
         return atom 
 
     else: 
+        atom.extend(electrons)
         return VGroup(*atom)
        
+def get_abstract_atom(scale : float = 1, dynamic : bool = True, n_valence : int = 4): 
+    nucleus = get_proton(radius=0.2*scale)
+    
+    electrons = [] 
+    for i in range(n_valence): 
+        angle = (2 * math.pi / n_valence) * i 
+        electron = get_electron(radius = 0.1 * scale).move_to([scale * math.cos(angle), scale * math.sin(angle), 0])
+        electrons.append(electron)
+    
+    if dynamic is True: 
+        nucleus = JigglingSubmobjects(VGroup(nucleus))
+        electrons = JigglingSubmobjects(VGroup(*electrons))
+
+    atom = VGroup(nucleus, electrons)
+    return atom 
+        

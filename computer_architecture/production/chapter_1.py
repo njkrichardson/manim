@@ -1,5 +1,5 @@
 from manimlib.imports import * 
-from computer_architecture.atomic.atom import get_bohr_atom, get_electron, get_proton
+from computer_architecture.atomic.atom import get_bohr_atom, get_electron, get_proton, get_abstract_atom, JigglingSubmobjects
 from computer_architecture.production.title_credits import IntroQuotation, ChapterTitle, PlanningScene
 
 class Preface(IntroQuotation): 
@@ -30,7 +30,8 @@ class SingleAtom(Scene):
         atom = get_bohr_atom(atomic_number=14, dynamic=True, show_orbits=True)
         self.add(atom)
 
-class ValenceAbstraction(Scene): 
+
+class MethodicalValenceAbstraction(Scene): 
     def construct(self): 
         orbits, nucleus, electrons = get_bohr_atom(atomic_number=14, dynamic=True, show_orbits=True, return_list=True)
         orbits = VGroup(*orbits)
@@ -47,12 +48,23 @@ class ValenceAbstraction(Scene):
         for electron, position in zip(valence_electrons, [direction * radius for direction in [UP, RIGHT, DOWN, LEFT]]): 
             electron.move_to(position)
 
-        valence_electrons = VGroup(*valence_electrons)
-        collapsed_nucleus = get_proton(radius=0.2)
+        valence_electrons = JigglingSubmobjects(VGroup(*valence_electrons))
+        collapsed_nucleus = JigglingSubmobjects(VGroup(get_proton(radius=0.2)))
 
         self.play(FadeOut(orbits))
-        self.play(Transform(electrons, valence_electrons))
-        self.play(Transform(nucleus, collapsed_nucleus))
+        self.play(ReplacementTransform(electrons, valence_electrons))
+        self.play(ReplacementTransform(nucleus, collapsed_nucleus))
 
+        self.wait(2)
+
+class SummaryValenceAbstraction(Scene): 
+    def construct(self): 
+        atom = get_bohr_atom(show_orbits=True, dynamic=True)
+        self.add(atom)
+        self.wait(2)
+
+        abstract_atom = get_abstract_atom(dynamic=True) 
+        self.add(abstract_atom)
+        self.play(ReplacementTransform(atom, abstract_atom))
         self.wait(2)
 
