@@ -1,6 +1,7 @@
 from manimlib.imports import * 
-from computer_architecture.atomic.atom import get_bohr_atom, get_electron, get_proton, get_abstract_atom, JigglingSubmobjects
+from computer_architecture.atomic.atom import get_bohr_atom, get_electron, get_proton, get_abstract_atom, JigglingSubmobjects, get_atom_grid
 from computer_architecture.production.title_credits import IntroQuotation, ChapterTitle, PlanningScene
+from computer_architecture.atomic.utils import get_grid_coordinates
 
 class Preface(IntroQuotation): 
     CONFIG={
@@ -67,4 +68,16 @@ class SummaryValenceAbstraction(Scene):
         self.add(abstract_atom)
         self.play(ReplacementTransform(atom, abstract_atom))
         self.wait(2)
+
+class SiliconCrystal(Scene): 
+    def construct(self): 
+        small_crystal = get_atom_grid() 
+        self.add(small_crystal)
+        self.wait(1)
+
+        large_crystal = get_atom_grid(origin_coords=(3.5, 3.5), n_rows=15, n_cols=15, width=4.5, height=4.5, scale=0.15, electron_radius=0.25)
+        self.add(large_crystal)
+        self.play(ReplacementTransform(small_crystal, large_crystal))
+        self.wait(3)
+
 

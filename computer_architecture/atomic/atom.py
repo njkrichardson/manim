@@ -1,4 +1,5 @@
 from manimlib.imports import *
+from computer_architecture.atomic.utils import get_grid_coordinates
 
 def get_particle(color : str, charge : str = None, radius : float = 0.1, **kwargs):
     result = Circle(
@@ -142,13 +143,13 @@ def get_bohr_atom(atomic_number : int = 14, dynamic : bool = False, show_orbits 
         atom.extend(electrons)
         return VGroup(*atom)
        
-def get_abstract_atom(scale : float = 1, dynamic : bool = True, n_valence : int = 4): 
+def get_abstract_atom(scale : float = 1, electron_radius : float = 1, dynamic : bool = True, n_valence : int = 4): 
     nucleus = get_proton(radius=0.2*scale)
     
     electrons = [] 
     for i in range(n_valence): 
         angle = (2 * math.pi / n_valence) * i 
-        electron = get_electron(radius = 0.1 * scale).move_to([scale * math.cos(angle), scale * math.sin(angle), 0])
+        electron = get_electron(radius = 0.1 * scale).move_to([electron_radius * math.cos(angle), electron_radius * math.sin(angle), 0])
         electrons.append(electron)
     
     if dynamic is True: 
@@ -158,3 +159,10 @@ def get_abstract_atom(scale : float = 1, dynamic : bool = True, n_valence : int 
     atom = VGroup(nucleus, electrons)
     return atom 
         
+def get_atom_grid(origin_coords : tuple = (2, 2), n_rows : int = 5, n_cols : int = 5, width : float = 4, height : float = 4, scale : float = 0.5, electron_radius : float = 0.5): 
+    atom_locs = get_grid_coordinates(origin_coords=origin_coords, n_rows=n_rows, n_cols=n_cols, width=width, height=height)
+    atoms = [] 
+    for loc in atom_locs: 
+        atom = get_abstract_atom(dynamic=True, scale=scale, electron_radius=electron_radius).move_to(loc)
+        atoms.append(atom)
+    return VGroup(*atoms)
