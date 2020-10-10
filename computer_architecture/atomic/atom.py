@@ -1,18 +1,51 @@
 from manimlib.imports import *
-from computer_architecture.atomic.utils import get_electron, get_proton, get_particle, JigglingSubmobjects
 
-def get_grid_coordinates(n_rows : int = 5, n_cols : int = 5) -> list: 
-    assert n_rows > 0 and n_cols > 0, "number of rows and number of columns must both be positive integers"
+def get_particle(color : str, charge : str = None, radius : float = 0.1, **kwargs):
+    result = Circle(
+        stroke_color=WHITE,
+        stroke_width=0.5,
+        fill_color=color,
+        fill_opacity=kwargs.pop("fill_opacity", 0.8),
+        radius=radius
+    )
+    if charge is not None: 
+        sign = TexMobject(charge) 
+        sign.set_stroke(WHITE, 1)
+        sign.set_width(0.5 * result.get_width())
+        sign.move_to(result)
+        result.add(sign)
+    return result
 
-    origin = 2 * LEFT + 2 * UP 
-    width_spacing, height_spacing = (2 * RIGHT - 2 * LEFT) / n_rows, (2 * UP - 2 * DOWN) / n_cols
-    grid_coordinates = [] 
+def get_proton(radius : float = 0.1):
+    return get_particle(RED, "+", radius)
 
-    for r in range(n_rows): 
-        for c in range(n_cols): 
-            grid_coordinates.append(origin + (RIGHT * width_spacing * r) + (DOWN * height_spacing * c))
+def get_electron(radius : float = 0.05):
+    return get_particle(BLUE, "-", radius)
 
-    return grid_coordinates
+class JigglingSubmobjects(VGroup):
+    CONFIG = {
+        "amplitude": 0.05,
+        "jiggles_per_second": 1,
+    }
+
+    def __init__(self, group, **kwargs):
+        VGroup.__init__(self, **kwargs)
+        for submob in group.submobjects:
+            submob.jiggling_direction = rotate_vector(
+                RIGHT, np.random.random() * TAU,
+            )
+            submob.jiggling_phase = np.random.random() * TAU
+            self.add(submob)
+        self.add_updater(lambda m, dt: m.update(dt))
+
+    def update(self, dt : float, recursive : bool = True):
+        for submob in self.submobjects:
+            submob.jiggling_phase += dt * self.jiggles_per_second * TAU
+            submob.shift(
+                self.amplitude *
+                submob.jiggling_direction *
+                np.sin(submob.jiggling_phase) * dt
+            )
 
 def get_atom_nucleus(n_protons : int = 14, n_neutrons : int = 14): 
     protons = [get_proton() for _ in range(n_protons)]
@@ -59,15 +92,16 @@ def get_electrons(atomic_number : int, show_orbits : bool = False, nucleus_locat
 
     electrons = [] 
 
+    orbital_radii = [(0.55 * shell) for shell in range(1, 6)]
+    for i, capacity in enumerate(orbital_populations): 
+        position_angles = [i * ((2 * math.pi)/capacity) for i in list(range(capacity))]
+        positions = [[orbital_radii[i] * math.cos(angle), orbital_radii[i] * math.sin(angle), 0] for angle in position_angles]
+        for position in positions: 
+            electron = get_electron() 
+            electron.move_to(position) 
+            electrons.append(electron)
+
     if show_orbits is True: 
-        orbital_radii = [(0.55 * shell) for shell in range(1, 6)]
-        for i, capacity in enumerate(orbital_populations): 
-            position_angles = [i * ((2 * math.pi)/capacity) for i in list(range(capacity))]
-            positions = [[orbital_radii[i] * math.cos(angle), orbital_radii[i] * math.sin(angle), 0] for angle in position_angles]
-            for position in positions: 
-                electron = get_electron() 
-                electron.move_to(position) 
-                electrons.append(electron)
         orbits = [] 
         for i, capacity in enumerate(orbital_populations): 
             orbital_path = Circle(radius=orbital_radii[i], stroke_width=1, color=WHITE)
@@ -75,45 +109,35 @@ def get_electrons(atomic_number : int, show_orbits : bool = False, nucleus_locat
     
         return electrons, orbits
 
-    else: 
-        nucleus_cov = np.eye(3) 
-        positions = npr.multivariate_normal(nucleus_location, nucleus_cov, size=atomic_number)
-        positions[:, 2] -= positions[:, 2]
-        for position in positions: 
-            electron = get_electron() 
-            electron.move_to(position) 
-            electrons.append(electron) 
-    
     return electrons 
 
-def get_bohr_atom(atomic_number : int = 14, dynamic : bool = False): 
+def get_bohr_atom(atomic_number : int = 14, dynamic : bool = False, show_orbits : bool = False, return_list : bool = False): 
     assert atomic_number == 14, "only silicon currently implemented"
 
+    atom = [] 
+
     nucleus = get_atom_nucleus(atomic_number, atomic_number)
-    electrons, orbits = get_electrons(atomic_number, show_orbits=True)
+
+    if show_orbits is True:  
+        electrons, orbits = get_electrons(atomic_number, show_orbits=show_orbits)
+        if return_list is True: 
+            atom.append(orbits)
+        else: 
+            atom.extend(orbits)
+    
+    else: 
+        electrons = get_electrons(atomic_number)
 
     if dynamic is True: 
         nucleus = JigglingSubmobjects(nucleus)
         electrons = JigglingSubmobjects(VGroup(*electrons))
-    
-    return VGroup(*[nucleus, *orbits, electrons])
+
+    atom.append(nucleus)
+    atom.append(electrons)
+
+    if return_list is True:  
+        return atom 
+
+    else: 
+        return VGroup(*atom)
        
-class ChapterIntroduction(Scene): 
-    def construct(self): 
-        # chapter_header = TextMobject("Chapter 1")
-        # chapter_name = TextMobject("The Atom")
-        # chapter_name.next_to(chapter_header, direction=DOWN) 
-        # self.play(FadeIn(chapter_header), FadeInFrom(chapter_name, direction=DOWN))
-        # self.wait(2) 
-        # self.play(FadeOut(chapter_header))
-        # self.play(FadeOut(chapter_name))
-
-        # show a single silicon atom
-        self.show_single_atom() 
-        self.wait(5)
-
-    def show_single_atom(self): 
-        atom = get_bohr_atom(14, True)
-        self.add(atom) 
-        
-        

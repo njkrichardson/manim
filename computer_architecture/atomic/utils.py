@@ -1,48 +1,14 @@
 from manimlib.imports import *
 
-def get_particle(color : str, charge : str = None, radius : float = 0.1, **kwargs):
-    result = Circle(
-        stroke_color=WHITE,
-        stroke_width=0.5,
-        fill_color=color,
-        fill_opacity=kwargs.pop("fill_opacity", 0.8),
-        radius=radius
-    )
-    if charge is not None: 
-        sign = TexMobject(charge) 
-        sign.set_stroke(WHITE, 1)
-        sign.set_width(0.5 * result.get_width())
-        sign.move_to(result)
-        result.add(sign)
-    return result
+def get_grid_coordinates(n_rows : int = 5, n_cols : int = 5, origin_coords : tuple = (2, 2), width : float = 2, height : float = 2) -> list: 
+    assert n_rows > 0 and n_cols > 0, "number of rows and number of columns must both be positive integers"
 
-def get_proton(radius : float = 0.1):
-    return get_particle(RED, "+", radius)
+    origin = origin_coords[0] * LEFT + origin_coords[1] * UP 
+    width_spacing, height_spacing = (width * RIGHT - origin_coords[0] * LEFT) / n_rows, (origin_coords[1] * UP - height * DOWN) / n_cols
+    grid_coordinates = [] 
 
-def get_electron(radius : float = 0.05):
-    return get_particle(BLUE, "-", radius)
+    for r in range(n_rows): 
+        for c in range(n_cols): 
+            grid_coordinates.append(origin + (RIGHT * width_spacing * r) + (DOWN * height_spacing * c))
 
-class JigglingSubmobjects(VGroup):
-    CONFIG = {
-        "amplitude": 0.05,
-        "jiggles_per_second": 1,
-    }
-
-    def __init__(self, group, **kwargs):
-        VGroup.__init__(self, **kwargs)
-        for submob in group.submobjects:
-            submob.jiggling_direction = rotate_vector(
-                RIGHT, np.random.random() * TAU,
-            )
-            submob.jiggling_phase = np.random.random() * TAU
-            self.add(submob)
-        self.add_updater(lambda m, dt: m.update(dt))
-
-    def update(self, dt : float, recursive : bool = True):
-        for submob in self.submobjects:
-            submob.jiggling_phase += dt * self.jiggles_per_second * TAU
-            submob.shift(
-                self.amplitude *
-                submob.jiggling_direction *
-                np.sin(submob.jiggling_phase) * dt
-            )
+    return grid_coordinates
